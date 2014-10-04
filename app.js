@@ -49,6 +49,21 @@ router.get('/', function(req, res) {
     });
 });
 
+var tesseract = require('node-tesseract');
+router.get('/ocr', function(req, res) {
+    tesseract.process(path.join(__dirname, 'image.jpg'), function(err, text) {
+        if(err) {
+            console.error(err);
+            res.send(err);
+        } else {
+//            res.send(text);
+            getEventsInMessage(text, '', '', function(err, result) {
+                res.send(result.toArraySync());
+            });
+        }
+    });
+});
+
 app.use('/', router);
 
 // catch 404 and forward to error handler
