@@ -19,18 +19,7 @@ app.use(require('less-middleware')(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 var java = require("java");
-//java.classpath.push("commons-lang3-3.1.jar");
-//java.classpath.push("commons-io.jar");
-var corenlp_path = path.join(__dirname, "../stanford-corenlp-full-2014-08-27");
-var list = fs.readdirSync(corenlp_path);
-list.forEach(function(file) {
-    if (file.substring(file.length-4) == ".jar") {
-        java.classpath.push(path.join(corenlp_path, file));
-    }
-});
-java.classpath.push(path.join(__dirname, "../NLPImpl/stanford-corenlp-3.4.jar"));
-java.classpath.push(path.join(__dirname, "../out/production/NLPImpl"));
-//var MessageParser = java.import('MessageParser');
+java.classpath.push(process.env.NLPImpl);
 
 function getEventsInMessage(body, subject, timestamp, callback) {
     java.callStaticMethod("MessageParser", "getEventsInMessage", body, subject, timestamp, callback);
