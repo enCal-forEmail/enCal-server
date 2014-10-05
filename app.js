@@ -111,8 +111,8 @@ router.get('/ocr', function(req, res) {
 router.post('/sendgrid', function(req, res) {
     console.log(req.body);
 
-//    var email = JSON.parse(req.body.envelope).from;
-    var email = req.body.from.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}/);
+    var email = JSON.parse(req.body.envelope).from.replace(/\+[^@]*/, '');
+//    var email = req.body.from.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}/);
 
     User.findOne({email: email}, function(err, user) {
         if (err) {
@@ -139,12 +139,15 @@ router.post('/sendgrid', function(req, res) {
                     res.end();
                 }
             });
+        } else {
+            console.log("User not found:", email);
         }
     });
 });
 
 var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function processEvents(user, events) {
+    console.log("events", events);
     if (events.length == 0) return;
 
     var item = {
