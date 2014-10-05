@@ -120,7 +120,7 @@ router.post('/sendgrid', function(req, res) {
             // Extract events
             getEventsInMessage(req.body.text, req.body.subject, new Date(), function(err, events) {
                 if (events.length == 0 && req.body.attachments != 0) {
-                    var file = path.join(__dirname, 'uploads', JSON.parse(req.body['attachment-info']).attachment1.filename);
+                    var file = req.files.attachment1.path;
                     tesseract.process(file, function(err, text) {
                         if (err) {
                             console.log("Tesseract error:", err);
