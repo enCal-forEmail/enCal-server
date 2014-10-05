@@ -25,9 +25,6 @@ function getEventsInMessage(body, subject, timestamp, callback) {
     java.callStaticMethod("MessageParser", "getEventsInMessage", body, subject, timestamp, callback);
 }
 
-
-var router = express.Router();
-
 /* GET home page. */
 router.get('/', function(req, res) {
     var body = "Hey Rocky!  Love learning about politics? Enjoy trivia games? Are you super competitive? Do you just like having fun and eating food?  Come on out to the  Political Trivia Study Break  Join The American Whig-Cliosophic Society for this year's first study break on Thursday at 7:30pm in the Whig Senate Chamber! Come settle the age-old question! Who's smarter: Whig or Clio? The winning side will receive a prize!  Pizza and other foods will be served as well!";
