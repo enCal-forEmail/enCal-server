@@ -32,6 +32,8 @@ var java = require("java");
 java.classpath.push(process.env.NLPImpl);
 
 function getEventsInMessage(body, subject, timestamp, callback) {
+    var location = java.callStaticMethodSync("MessageParser", "getLocation", body, subject);
+
     java.callStaticMethod("MessageParser", "getEventsInMessage", body, subject, timestamp, function(err, events) {
         if (events == null) {
             callback(null, []);
@@ -53,8 +55,8 @@ function getEventsInMessage(body, subject, timestamp, callback) {
                         newEvent.end = {
                             dateTime: results[1]
                         };
-                        newEvent.summary = "Event";
-                        newEvent.location = "somewhere";
+                        newEvent.summary = subject;
+                        newEvent.location = location;
                         cb(err, newEvent);
                     });
                 }, callback);
@@ -118,6 +120,8 @@ router.post('/sendgrid', function(req, res) {
             // Extract events
             getEventsInMessage(req.body.text, req.body.subject, new Date(), function(err, events) {
                 processEvents(user, events);
+                res.status(200);
+                res.end();
             });
         }
     });
