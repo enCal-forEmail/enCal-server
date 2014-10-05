@@ -121,16 +121,14 @@ router.post('/sendgrid', function(req, res) {
             getEventsInMessage(req.body.text, req.body.subject, new Date(), function(err, events) {
                 if (events.length == 0 && req.body.attachments != 0) {
                     var file = req.files.attachment1.path;
+                    res.status(200);
+                    res.end();
                     tesseract.process(file, function(err, text) {
                         if (err) {
                             console.log("Tesseract error:", err);
-                            res.status(200);
-                            res.end();
                         } else {
                             getEventsInMessage(text, req.body.subject, new Date(), function (err, events) {
                                 processEvents(user, events);
-                                res.status(200);
-                                res.end();
                             });
                         }
                     });
