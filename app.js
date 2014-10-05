@@ -114,16 +114,20 @@ router.post('/sendgrid', function(req, res) {
         } else if (user != null) {
             // Extract events
             getEventsInMessage(req.body.text, req.body.subject, new Date(), function(err, events) {
-                // TODO: send list of event possibilities to the user
-                console.log(events[0]);
-                addToCalendar(user.accessToken, events[0], function(err, response) {
-                    console.log(err, response);
-                    res.end();
-                });
+                processEvents(events);
             });
         }
     });
 });
+
+function processEvents(events) {
+    // TODO: send list of event possibilities to the user
+    console.log(events[0]);
+    addToCalendar(user.accessToken, events[0], function (err, response) {
+        console.log(err, response);
+        res.end();
+    });
+}
 
 function addToCalendar(accessToken, event, callback) {
     // If only one event, add to calendar
