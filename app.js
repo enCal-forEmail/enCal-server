@@ -6,6 +6,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var debug = require('debug')('enCal-server');
 var fs = require('fs');
+var multer  = require('multer');
 
 var app = express();
 
@@ -14,6 +15,7 @@ var app = express();
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(multer({ dest: path.join(__dirname, 'uploads')}));
 app.use(cookieParser());
 app.use(require('less-middleware')(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -51,6 +53,11 @@ router.get('/ocr', function(req, res) {
             });
         }
     });
+});
+
+router.post('/sendgrid', function(req, res) {
+    console.log(req.body);
+    res.end();
 });
 
 app.use('/', router);
