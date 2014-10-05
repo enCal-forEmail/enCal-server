@@ -125,6 +125,8 @@ router.post('/sendgrid', function(req, res) {
 
 var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function processEvents(user, events) {
+    if (events.length == 0) return;
+
     var item = {
         "Title": events[0].summary,
         "Time Ranges":[],
