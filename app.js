@@ -13,6 +13,9 @@ var google = require('googleapis');
 var calendar = google.calendar('v3');
 var OAuth2 = google.auth.OAuth2;
 
+var Firebase = require('firebase');
+var firebase = new Firebase('https://brilliant-fire-8245.firebaseio.com/');
+
 var app = express();
 
 // uncomment after placing your favicon in /public
@@ -114,19 +117,36 @@ router.post('/sendgrid', function(req, res) {
         } else if (user != null) {
             // Extract events
             getEventsInMessage(req.body.text, req.body.subject, new Date(), function(err, events) {
-                processEvents(events);
+                processEvents(email, events);
             });
         }
     });
 });
 
-function processEvents(events) {
-    // TODO: send list of event possibilities to the user
-    console.log(events[0]);
-    addToCalendar(user.accessToken, events[0], function (err, response) {
-        console.log(err, response);
-        res.end();
+var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function processEvents(email, events) {
+    var item = {
+        "Title": events[0].summary,
+        "Time Ranges":[],
+        "Location" : events[0].location
+    };
+    events.forEach(function(event) {
+        var start = new Date(event.start.dateTime);
+        var end = new Date(event.end.dateTime);
+        item["Time Ranges"].push({
+            start: start.getHours() + ":" + start.getMinutes(),
+            startDate: months[start.getMonth()] + " " + start.getDate(),
+            end: end.getHours() + ":" + end.getMinutes(),
+            endDate: months[end.getMonth()] + " " + end.getDate()
+        })
     });
+    firebase.child('users').child(email.replace(/\./g, ",")).push(item);
+
+    if (events.length == 1) {
+        addToCalendar(user.accessToken, events[0], function (err, response) {
+            console.log(err, response);
+        });
+    }
 }
 
 function addToCalendar(accessToken, event, callback) {
