@@ -128,6 +128,7 @@ router.post('/sendgrid', function(req, res) {
                         if (err) {
                             console.log("Tesseract error:", err);
                         } else {
+                            console.log("Tesseract result:", text);
                             getEventsInMessage(text, req.body.subject, new Date(), function (err, events) {
                                 processEvents(user, events);
                             });
