@@ -111,7 +111,8 @@ router.get('/ocr', function(req, res) {
 router.post('/sendgrid', function(req, res) {
     console.log(req.body);
 
-    var email = JSON.parse(req.body.envelope).from;
+//    var email = JSON.parse(req.body.envelope).from;
+    var email = req.body.from.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}/);
 
     User.findOne({email: email}, function(err, user) {
         if (err) {
@@ -197,22 +198,6 @@ function addToCalendar(accessToken, event, callback) {
 }
 
 app.use('/', router);
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-    var err = new Error('Not Found');
-    err.status = 404;
-    next(err);
-});
-
-// error handler
-app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.render('error', {
-        message: err.message,
-        error: err
-    });
-});
 
 app.set('port', process.env.PORT || 3000);
 
