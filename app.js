@@ -7,6 +7,11 @@ var bodyParser = require('body-parser');
 var debug = require('debug')('enCal-server');
 var fs = require('fs');
 var multer  = require('multer');
+var async = require('async');
+
+var google = require('googleapis');
+var calendar = google.calendar('v3');
+var OAuth2 = google.auth.OAuth2;
 
 var app = express();
 
@@ -24,9 +29,36 @@ var java = require("java");
 java.classpath.push(process.env.NLPImpl);
 
 function getEventsInMessage(body, subject, timestamp, callback) {
-    java.callStaticMethod("MessageParser", "getEventsInMessage", body, subject, timestamp, callback);
+    java.callStaticMethod("MessageParser", "getEventsInMessage", body, subject, timestamp, function(err, events) {
+        if (events == null) {
+            callback(null, []);
+        } else {
+            events.toArray(function(err, eventsArray) {
+                async.map(eventsArray, function(event, cb) {
+                    var newEvent = {};
+                    async.parallel([
+                        function(cb) {
+                            event.start.toString(cb);
+                        },
+                        function(cb) {
+                            event.end.toString(cb);
+                        }
+                    ], function(err, results) {
+                        newEvent.start = {
+                            dateTime: results[0]
+                        };
+                        newEvent.end = {
+                            dateTime: results[1]
+                        };
+                        newEvent.summary = "Event";
+                        newEvent.location = "somewhere";
+                        cb(err, newEvent);
+                    });
+                }, callback);
+            });
+        }
+    });
 }
-
 
 var router = express.Router();
 
@@ -72,8 +104,38 @@ router.get('/ocr', function(req, res) {
 
 router.post('/sendgrid', function(req, res) {
     console.log(req.body);
-    res.end();
+
+    var email = JSON.parse(req.body.envelope).from;
+
+    User.findOne({email: email}, function(err, user) {
+        if (err) {
+            console.log("/sendgrid", err);
+        } else if (user != null) {
+            // Extract events
+            getEventsInMessage(req.body.text, req.body.subject, new Date(), function(err, events) {
+                // TODO: send list of event possibilities to the user
+                console.log(events[0]);
+                addToCalendar(user.accessToken, events[0], function(err, response) {
+                    console.log(err, response);
+                    res.end();
+                });
+            });
+        }
+    });
 });
+
+function addToCalendar(accessToken, event, callback) {
+    // If only one event, add to calendar
+    var oauth2Client = new OAuth2("abc", "def", "jhk");
+    oauth2Client.setCredentials({
+        access_token: accessToken
+    });
+    calendar.events.insert({
+        calendarId: "primary",
+        auth: oauth2Client,
+        resource: event
+    }, callback);
+}
 
 app.use('/', router);
 

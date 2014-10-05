@@ -12,7 +12,7 @@ userSchema.statics.updateOrCreate = function (email, accessToken, callback) {
     that.findOne({email: email}, function (err, result) {
         if (!err && result) {
             // user already exists, update token
-            result.update({email: email}, function(err) {
+            result.update({accessToken: accessToken}, function(err) {
                 callback(err, result);
             });
         } else {
