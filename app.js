@@ -117,14 +117,14 @@ router.post('/sendgrid', function(req, res) {
         } else if (user != null) {
             // Extract events
             getEventsInMessage(req.body.text, req.body.subject, new Date(), function(err, events) {
-                processEvents(email, events);
+                processEvents(user, events);
             });
         }
     });
 });
 
 var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-function processEvents(email, events) {
+function processEvents(user, events) {
     var item = {
         "Title": events[0].summary,
         "Time Ranges":[],
@@ -140,12 +140,25 @@ function processEvents(email, events) {
             endDate: months[end.getMonth()] + " " + end.getDate()
         })
     });
-    firebase.child('users').child(email.replace(/\./g, ",")).push(item);
+    var itemRef = firebase.child('users').child(user.email.replace(/\./g, ",")).push(item);
 
     if (events.length == 1) {
         addToCalendar(user.accessToken, events[0], function (err, response) {
             console.log(err, response);
         });
+    } else {
+        itemRef.child("Selected").on("value", function(snapshot) {
+            var selected = snapshot.val();
+            console.log(selected);
+            if (selected != null) {
+                snapshot.ref().off("value");
+                snapshot.ref().parent().child("Time Ranges").once("value", function(snapshot) {
+                    addToCalendar(user.accessToken, snapshot.val()[selected], function(err, response) {
+                        console.log(err, response);
+                    });
+                })
+            }
+        })
     }
 }
 
