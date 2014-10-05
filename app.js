@@ -119,9 +119,26 @@ router.post('/sendgrid', function(req, res) {
         } else if (user != null) {
             // Extract events
             getEventsInMessage(req.body.text, req.body.subject, new Date(), function(err, events) {
-                processEvents(user, events);
-                res.status(200);
-                res.end();
+                if (events.length == 0 && req.body.attachments != 0) {
+                    var file = path.join(__dirname, 'uploads', JSON.parse(req.body['attachment-info']).attachment1.filename);
+                    tesseract.process(file, function(err, text) {
+                        if (err) {
+                            console.log("Tesseract error:", err);
+                            res.status(200);
+                            res.end();
+                        } else {
+                            getEventsInMessage(text, req.body.subject, new Date(), function (err, events) {
+                                processEvents(user, events);
+                                res.status(200);
+                                res.end();
+                            });
+                        }
+                    });
+                } else {
+                    processEvents(user, events);
+                    res.status(200);
+                    res.end();
+                }
             });
         }
     });
