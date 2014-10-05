@@ -43,6 +43,18 @@ router.get('/', function(req, res) {
     });
 });
 
+
+var User = require('./user');
+router.post('/login', function(req, res) {
+    User.updateOrCreate(req.body.email,  req.body.accessToken, function(err, user) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.end();
+        }
+    })
+});
+
 var tesseract = require('node-tesseract');
 router.get('/ocr', function(req, res) {
     tesseract.process(path.join(__dirname, 'image.jpg'), function(err, text) {
