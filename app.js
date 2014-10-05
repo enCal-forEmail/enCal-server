@@ -36,7 +36,10 @@ router.get('/', function(req, res) {
     var subject = "Engr Club Meetings in Huang 23";
     var timestamp = "faketimestamp";
     getEventsInMessage(body, subject, timestamp, function(err, result) {
-        res.json(result.toArraySync());
+        result.toArraySync().forEach(function(date) {
+            res.write(date.toStringSync());
+        });
+        res.end();
     });
 });
 
